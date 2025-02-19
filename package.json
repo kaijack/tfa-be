@@ -8,8 +8,8 @@
     "start:dev": "nest start --watch",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "postinstall": "prisma generate",
-    "buildCommand": "npm install && prisma generate && next build"
+    "postinstall": "npx prisma generate",
+    "buildCommand": "npm install && npx prisma generate && npm run build"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
