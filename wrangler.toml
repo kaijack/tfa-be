@@ -1,0 +1,6 @@
+name = "my-nestjs-worker" # Worker name
+type = "javascript"       # Use "javascript" or "webpack" (default type)
+
+account_id = "your-cloudflare-account-id" # Your Cloudflare account ID
+workers_dev = true                        # Enable development mode
+compatibility_date = "2025-02-19"         # Compatibility date for the Worker
