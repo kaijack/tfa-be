@@ -6,10 +6,11 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: 'https://tfa-frontend.pages.dev/',
+    origin: '*',
+    // origin: 'https://tfa-frontend.pages.dev/',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Authorization', // Allow required headers
-    credentials: true, // If you use cookies or authorization headers
+    // allowedHeaders: 'Content-Type, Authorization', //
+    credentials: false, 
   });
 
   await app.listen(3000);
