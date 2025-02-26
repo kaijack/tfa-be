@@ -14,7 +14,7 @@ export class CreateMenuDto {
 
   @IsUUID()
   @IsOptional()
-  parentId?: string;
+  parent_id?: string;
 
   @IsString()
   @IsOptional() // Optional since it can be derived from the parent menu

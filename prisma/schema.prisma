@@ -10,7 +10,6 @@ datasource db {
 
 model Menu {
   id        String   @id @default(uuid())
-  key       String   
   name      String
   depth     Int
   parentId  String?  @map("parent_id")

@@ -14,7 +14,7 @@ interface MenuItem {
 
 @Injectable()
 export class MenuService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // Fetch all menus (flat list)
   async getAllMenus(): Promise<Menu[]> {
@@ -30,7 +30,7 @@ export class MenuService {
           p.name AS "parentName"
         FROM menus AS m
         LEFT JOIN menus AS p ON m.parent_id = p.id
-        ORDER BY m.depth ASC, m.created_at ASC
+        ORDER BY created_at, depth, parent_id ASC
       `;
 
       const menus = (await this.prisma.$queryRawUnsafe(rawQuery)) as Menu[];
@@ -54,27 +54,31 @@ export class MenuService {
   async getMenuHierarchy(): Promise<MenuItem[]> {
     try {
       const rawQuery = `
-        WITH RECURSIVE menu_hierarchy AS (
-          SELECT 
-            m.id,
-            m.name,
-            m.depth,
-            m.parent_id,
-            m.created_at
-          FROM menus AS m
-          WHERE m.parent_id IS NULL
-          UNION ALL
-          SELECT 
-            c.id,
-            c.name,
-            c.depth,
-            c.parent_id,
-            c.created_at
-          FROM menus AS c
-          INNER JOIN menu_hierarchy AS p ON c.parent_id = p.id
-        )
-        SELECT * FROM menu_hierarchy 
-        ORDER BY depth ASC, created_at ASC;
+      WITH RECURSIVE menu_hierarchy AS (
+        SELECT 
+          m.id,
+          m.name,
+          m.depth,
+          m.parent_id,
+          m.created_at,
+          NULL AS parent_name 
+        FROM menus AS m
+        WHERE m.parent_id IS NULL
+        UNION ALL
+        SELECT 
+          c.id,
+          c.name,
+          c.depth,
+          c.parent_id,
+          c.created_at,
+          p.name AS parent_name 
+        FROM menus AS c
+        INNER JOIN menu_hierarchy AS p ON c.parent_id = p.id
+      )
+      SELECT * 
+      FROM menu_hierarchy 
+      ORDER BY created_at, depth, parent_id ASC
+      
       `;
 
       const menus = (await this.prisma.$queryRawUnsafe(rawQuery)) as MenuItem[];
@@ -107,10 +111,10 @@ export class MenuService {
   async addChildMenu(data: CreateMenuDto): Promise<Menu> {
     try {
       const rawQueryParent = `SELECT * FROM menus WHERE id = $1`;
-      const parentMenu = (await this.prisma.$queryRawUnsafe(rawQueryParent, data.parentId)) as Menu[];
+      const parentMenu = (await this.prisma.$queryRawUnsafe(rawQueryParent, data.parent_id)) as Menu[];
 
       if (!parentMenu.length) {
-        throw new Error(`Parent menu with ID ${data.parentId} does not exist.`);
+        throw new Error(`Parent menu with ID ${data.parent_id} does not exist.`);
       }
 
       const childDepth = parentMenu[0].depth + 1;
@@ -124,7 +128,7 @@ export class MenuService {
         rawQueryInsert,
         data.name,
         childDepth,
-        data.parentId,
+        data.parent_id,
       )) as Menu[];
 
       return newChildMenu[0];
@@ -135,21 +139,22 @@ export class MenuService {
   }
 
   // Create a new menu
+  
   async createMenu(data: CreateMenuDto): Promise<Menu> {
     try {
       let depth = 0;
-      let parentId: string | null = null;
+      let parent_id: string | null = null;
 
-      if (data.parentId) {
+      if (data.parent_id) {
         const rawQueryParent = `SELECT * FROM menus WHERE id = $1`;
-        const parentMenu = (await this.prisma.$queryRawUnsafe(rawQueryParent, data.parentId)) as Menu[];
+        const parentMenu = (await this.prisma.$queryRawUnsafe(rawQueryParent, data.parent_id)) as Menu[];
 
         if (!parentMenu.length) {
-          throw new Error(`Parent menu with ID ${data.parentId} does not exist.`);
+          throw new Error(`Parent menu with ID ${data.parent_id} does not exist.`);
         }
 
         depth = parentMenu[0].depth + 1;
-        parentId = data.parentId;
+        parent_id = data.parent_id;
       }
 
       const rawQueryInsert = `
@@ -157,7 +162,7 @@ export class MenuService {
         VALUES ($1, $2, $3) 
         RETURNING *
       `;
-      const newMenu = (await this.prisma.$queryRawUnsafe(rawQueryInsert, data.name, depth, parentId)) as Menu[];
+      const newMenu = (await this.prisma.$queryRawUnsafe(rawQueryInsert, data.name, 4, data?.parent_id)) as Menu[];
 
       return newMenu[0];
     } catch (error) {
@@ -165,6 +170,7 @@ export class MenuService {
       throw new Error('Failed to create menu. Please check your data.');
     }
   }
+
 
   // Update an existing menu
   async updateMenu(id: string, data: UpdateMenuDto): Promise<Menu> {
