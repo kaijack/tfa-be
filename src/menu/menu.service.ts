@@ -107,39 +107,7 @@ export class MenuService {
     }
   }
 
-  // Add a child menu to a parent menu
-  async addChildMenu(data: CreateMenuDto): Promise<Menu> {
-    try {
-      const rawQueryParent = `SELECT * FROM menus WHERE id = $1`;
-      const parentMenu = (await this.prisma.$queryRawUnsafe(rawQueryParent, data.parent_id)) as Menu[];
-
-      if (!parentMenu.length) {
-        throw new Error(`Parent menu with ID ${data.parent_id} does not exist.`);
-      }
-
-      const childDepth = parentMenu[0].depth + 1;
-
-      const rawQueryInsert = `
-        INSERT INTO menus (name, depth, parent_id) 
-        VALUES ($1, $2, $3) 
-        RETURNING *
-      `;
-      const newChildMenu = (await this.prisma.$queryRawUnsafe(
-        rawQueryInsert,
-        data.name,
-        childDepth,
-        data.parent_id,
-      )) as Menu[];
-
-      return newChildMenu[0];
-    } catch (error) {
-      console.error('Error adding child menu:', error);
-      throw new Error('Failed to add child menu. Please check your data.');
-    }
-  }
-
   // Create a new menu
-  
   async createMenu(data: CreateMenuDto): Promise<Menu> {
     try {
       let depth = 0;

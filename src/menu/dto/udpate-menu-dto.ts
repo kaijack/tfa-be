@@ -5,8 +5,8 @@ export class UpdateMenuDto {
   name: string;
 
   @IsOptional()
-  @IsUUID() // If using UUIDs
-  parentId?: string; // Use string for parentId
+  @IsUUID() 
+  parentId?: string; 
 
   @IsInt()
   depth: number;

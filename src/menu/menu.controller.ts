@@ -24,7 +24,7 @@ export class MenuController {
   
   @Put(':id')
   async updateMenu(
-    @Param('id') id: string,  // Since the ID is a UUID, it should be a string
+    @Param('id') id: string,
     @Body() updateMenuDto: UpdateMenuDto
   ) {
     return this.menuService.updateMenu(id, updateMenuDto);

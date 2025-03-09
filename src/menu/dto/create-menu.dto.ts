@@ -2,14 +2,14 @@ import { IsString, IsOptional, IsInt, IsUUID } from 'class-validator';
 
 export class CreateMenuDto {
   @IsUUID()
-  @IsOptional() // Optional since Prisma auto-generates UUIDs
+  @IsOptional()
   id?: string;
 
   @IsString()
-  name!: string; // Use `!` to indicate that the property will be initialized before use
+  name!: string;
 
   @IsInt()
-  @IsOptional() // Mark depth as optional if it's calculated in the service
+  @IsOptional()
   depth?: number;
 
   @IsUUID()
@@ -17,6 +17,6 @@ export class CreateMenuDto {
   parent_id?: string;
 
   @IsString()
-  @IsOptional() // Optional since it can be derived from the parent menu
+  @IsOptional()
   parentName?: string;
 }

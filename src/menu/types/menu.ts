@@ -3,7 +3,7 @@ export interface Menu {
   name: string;
   depth: number;
   parentId: string | null;
-  parentName: string | null; // This field is required
+  parentName: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
